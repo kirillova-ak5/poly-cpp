@@ -15,10 +15,12 @@ class UNIT_SEGMENT : public UNIT {
       return pos - VEC(norm.y, -norm.x) * rad;
    }
 
-public:
    COLOR col;
+
+protected:
    VEC pos, norm;
    DBL rad;
+public:
 
    UNIT_SEGMENT(ANIM *anim, VEC p, VEC n, DBL r, COLOR c = COLOR(32, 32, 255, 0)) :
       pos(p), rad(r), norm(n), col(c)
@@ -26,9 +28,14 @@ public:
       ani = anim;
    }
 
-   VOID SetAlpha(BYTE a)
+   VOID IncreaseAlpha(int a)
    {
-      col.a = a;
+      col.a += (255 - col.a >= a) ? a : 0;
+   }
+
+   VOID Scale(double a)
+   {
+      rad *= a;
    }
 
    VOID Draw(VOID)
