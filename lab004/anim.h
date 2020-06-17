@@ -20,7 +20,6 @@ public:
 
    VOID AddLevel(LEVEL *lev)
    {
-      lev->ani = this;
       levels.push_back(lev);
    }
 

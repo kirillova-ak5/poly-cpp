@@ -9,11 +9,25 @@ class ANIM;
 class LEVEL;
 
 class PAWN {
+   friend class LEVEL;
+protected:
+   LEVEL *lev = NULL;
+   BOOL isExist = true;
 public:
-  LEVEL* lev = NULL;
-  BOOL IsExist = TRUE;
-  virtual VOID Draw(VOID) = 0;
-  virtual VOID Response(VOID) = 0;
+   virtual VOID Draw(VOID) = 0;
+   virtual VOID Response(VOID) = 0;
+   BOOL IsExist(VOID)
+   {
+      return isExist;
+   }
+   virtual VOID Kill(VOID)
+   {
+      isExist = false;
+   }
+   virtual VOID Respawn(VOID)
+   {
+      isExist = true;
+   }
 };
 
 struct TILE
@@ -28,13 +42,15 @@ struct TILE
 };
 
 class LEVEL {
-public:
-   ANIM *ani = NULL;
+   friend class PAWN;
+
+   ANIM *ani = nullptr;
    std::vector<PAWN *> pawns;
    std::vector<std::vector<TILE>> map;
    VEC2i Size;
    texture Background;
-   LEVEL(std::string Filename);
+public:
+   LEVEL(std::string Filename, ANIM *Ani);
    VOID Draw(VOID)
    {
       Background.Apply();
@@ -52,7 +68,7 @@ public:
       glEnd();
 
       for (auto &a : pawns)
-         if (a->IsExist)
+         if (a->IsExist())
             a->Draw();
    }
    VOID Response(VOID)
@@ -60,45 +76,91 @@ public:
       for (auto &a : pawns)
          a->Response();
    }
+   VOID KillPawn(int x, int y);
+   TILE::TYPE GetState(VEC2i v)
+   {
+      return map[v.y][v.x].type;
+   }
+   BOOL CheckKey(char c);
+
+   VEC2i GetSize(VOID)
+   {
+      return Size;
+   }
+
+   VEC2i TryRespawn(VEC2i pos, PAWN *p);
    ~LEVEL();
 };
 
-class SNAKE : public PAWN
-{
+class SNAKE : public PAWN {
+   static texture Tex;
+   std::vector<VEC2i> Arr;
+   VEC2i CurVel = VEC2i(0);
 public:
-  static texture Tex;
-  std::vector<VEC2i> Arr;
-  VEC2i CurVel = VEC2i(0);
-  SNAKE() {};
-  ~SNAKE() {};
-  virtual VOID Draw(VOID);
-  virtual VOID Response(VOID);
+   SNAKE(int x, int y);
+   ~SNAKE() { };
+   virtual VOID Draw(VOID);
+   virtual VOID Response(VOID);
+   static VOID SetTex(texture t)
+   {
+      Tex = t;
+   }
+   static VOID ClearTex(VOID)
+   {
+      Tex.Delete();
+   }
 };
 
-class WALL : public PAWN
-{
+class WALL : public PAWN {
+   static texture Tex;
+   VEC2i Pos;
 public:
-  static texture Tex;
-  VEC2i Pos;
-  WALL() {};
-  ~WALL() {};
-  virtual VOID Draw(VOID);
-  virtual VOID Response(VOID) {};
+   WALL() { };
+   ~WALL() { };
+   virtual VOID Draw(VOID);
+   virtual VOID Response(VOID) { };
+   static VOID SetTex(texture t)
+   {
+      Tex = t;
+   }
+   static VOID ClearTex(VOID)
+   {
+      Tex.Delete();
+   }
+
+   VOID SetPos(int x, int y)
+   {
+      Pos = VEC2i(x, y);
+   }
 };
 
-class FOOD : public PAWN
-{
+class FOOD : public PAWN {
+   static texture Tex;
+   UINT Type = 0;
+   VEC2i Pos;
 public:
-  static texture Tex;
-  UINT Type = 0;
-  VEC2i Pos;
-  FOOD()
-  {
-    Type = rand() % 3;
-  }
-  ~FOOD() {}
-  virtual VOID Draw(VOID);
-  virtual VOID Response(VOID);
+   FOOD()
+   {
+      Type = rand() % 3;
+   }
+   ~FOOD() { }
+   virtual VOID Draw(VOID);
+   virtual VOID Response(VOID);
+   VOID Kill(VOID);
+   VOID Respawn(VOID);
+   static VOID SetTex(texture t)
+   {
+      Tex = t;
+   }
+   static VOID ClearTex(VOID)
+   {
+      Tex.Delete();
+   }
+
+   VOID SetPos(int x, int y)
+   {
+      Pos = VEC2i(x, y);
+   }
 };
 
 #endif // __LEVELS_H_
