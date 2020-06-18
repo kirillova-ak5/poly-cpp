@@ -9,11 +9,13 @@ class ANIM;
 class LEVEL;
 
 class PAWN {
-   friend class LEVEL;
 protected:
    LEVEL *lev = NULL;
    BOOL isExist = true;
 public:
+   PAWN(LEVEL *l) : lev(l)
+   {
+   }
    virtual VOID Draw(VOID) = 0;
    virtual VOID Response(VOID) = 0;
    BOOL IsExist(VOID)
@@ -42,7 +44,6 @@ struct TILE
 };
 
 class LEVEL {
-   friend class PAWN;
 
    ANIM *ani = nullptr;
    std::vector<PAWN *> pawns;
@@ -97,7 +98,7 @@ class SNAKE : public PAWN {
    std::vector<VEC2i> Arr;
    VEC2i CurVel = VEC2i(0);
 public:
-   SNAKE(int x, int y);
+   SNAKE(int x, int y, LEVEL *l);
    ~SNAKE() { };
    virtual VOID Draw(VOID);
    virtual VOID Response(VOID);
@@ -115,7 +116,7 @@ class WALL : public PAWN {
    static texture Tex;
    VEC2i Pos;
 public:
-   WALL() { };
+   WALL(LEVEL *l) : PAWN(l) { };
    ~WALL() { };
    virtual VOID Draw(VOID);
    virtual VOID Response(VOID) { };
@@ -139,15 +140,15 @@ class FOOD : public PAWN {
    UINT Type = 0;
    VEC2i Pos;
 public:
-   FOOD()
+   FOOD(LEVEL *l) : PAWN(l) 
    {
       Type = rand() % 3;
    }
    ~FOOD() { }
    virtual VOID Draw(VOID);
    virtual VOID Response(VOID);
-   VOID Kill(VOID);
-   VOID Respawn(VOID);
+   /*VOID Kill(VOID);
+   VOID Respawn(VOID);*/
    static VOID SetTex(texture t)
    {
       Tex = t;
